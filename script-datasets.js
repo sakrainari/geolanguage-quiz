@@ -124,7 +124,7 @@ const SCRIPT_DATASETS = {
                     answer: p.a,
                     type: p.type,
                     note: p.desc,
-                    mapQuery: `${p.a}, Bangladesh`,
+                    mapQuery: p.type === 'District' ? `${p.a} District, Bangladesh` : `${p.a}, Bangladesh`,
                     detail: [
                         { label: '種別', value: p.type },
                         { label: '地名', value: p.a },
