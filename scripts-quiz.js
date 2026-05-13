@@ -181,6 +181,15 @@ function renderFeedback(item, isCorrect, option) {
         div.innerHTML = `<div class="text-xs font-bold uppercase tracking-wide text-slate-400">${row.label}</div><div class="mt-1 text-sm font-semibold text-slate-700">${row.value}</div>`;
         detail.appendChild(div);
     });
+
+    const mapLink = $('#map-link');
+    if (item.mapQuery) {
+        mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapQuery)}`;
+        mapLink.style.display = 'inline-flex';
+    } else {
+        mapLink.removeAttribute('href');
+        mapLink.style.display = 'none';
+    }
 }
 
 function nextQuestion() {

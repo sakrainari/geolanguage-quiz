@@ -48,6 +48,7 @@ const SCRIPT_DATASETS = {
                     answer: p.english,
                     type: p.region,
                     note: `${p.katakana} / ${p.meaning}`,
+                    mapQuery: `${p.english} Province, Thailand`,
                     detail: [
                         { label: '地域', value: p.region },
                         { label: '意味', value: p.meaning },
@@ -64,6 +65,7 @@ const SCRIPT_DATASETS = {
                     answer: p.english,
                     type: '県名略語',
                     note: `${p.thai} / ${p.katakana}`,
+                    mapQuery: `${p.english} Province, Thailand`,
                     detail: [
                         { label: '正式表記', value: p.thai },
                         { label: '略語', value: p.abbr },
@@ -122,6 +124,7 @@ const SCRIPT_DATASETS = {
                     answer: p.a,
                     type: p.type,
                     note: p.desc,
+                    mapQuery: `${p.a}, Bangladesh`,
                     detail: [
                         { label: '種別', value: p.type },
                         { label: '地名', value: p.a },
