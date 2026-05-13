@@ -11,6 +11,9 @@ const state = {
     timeLimit: 0,
     timeRemaining: 0,
     timerId: null,
+    lastScoreDelta: 0,
+    reviewAdded: 0,
+    reviewCleared: 0,
 };
 
 const REVIEW_STORAGE_KEY = 'geolanguage-quiz-review-v1';
@@ -71,6 +74,7 @@ function addReviewItem(item) {
     const key = getItemKey(datasetId, modeId, item);
     const store = readReviewStore();
     const previous = store[key] || {};
+    const isNew = !store[key];
     store[key] = {
         datasetId,
         modeId,
@@ -80,13 +84,16 @@ function addReviewItem(item) {
         lastMissedAt: new Date().toISOString(),
     };
     writeReviewStore(store);
+    return isNew;
 }
 
 function removeReviewItem(item) {
     const key = getItemKey(state.datasetId, state.modeId, item);
     const store = readReviewStore();
+    const existed = Boolean(store[key]);
     delete store[key];
     writeReviewStore(store);
+    return existed;
 }
 
 function getReviewItemsForCurrentMode() {
@@ -223,6 +230,9 @@ function startQuiz(useReview = false) {
     state.score = 0;
     state.correct = 0;
     state.locked = false;
+    state.lastScoreDelta = 0;
+    state.reviewAdded = 0;
+    state.reviewCleared = 0;
     showScreen('quiz');
     renderQuestion();
 }
@@ -267,7 +277,10 @@ function handleTimeout() {
     state.locked = true;
 
     const item = state.items[state.current];
-    addReviewItem(item);
+    if (addReviewItem(item)) {
+        state.reviewAdded++;
+    }
+    state.lastScoreDelta = 0;
     updateReviewControls();
     $$('.opt').forEach(button => {
         const text = button.textContent.replace(/^\d+\s*/, '');
@@ -388,6 +401,7 @@ function renderQuestion() {
     $('#quiz-context').textContent = `${dataset.label} / ${mode.label}${state.reviewMode ? ' / 再履修' : ''}`;
     $('#qno').textContent = `${state.current + 1} / ${state.items.length}`;
     $('#score').textContent = `Score ${state.score}`;
+    renderQuizBadges();
     $('#prompt').textContent = item.prompt;
     $('#prompt').className = `${dataset.textClass} text-center font-bold text-[#102019] drop-shadow-sm ${mode.id.includes('places') || mode.id.includes('provinces') ? 'text-5xl md:text-7xl' : 'text-7xl md:text-9xl'}`;
     $('#feedback').style.display = 'none';
@@ -405,6 +419,16 @@ function renderQuestion() {
     });
 }
 
+function renderQuizBadges() {
+    const badges = [];
+    if (state.reviewMode) badges.push({ label: '再履修', className: 'bg-orange-100 text-orange-800 border-orange-200' });
+    if (state.hardMode) badges.push({ label: 'ハード', className: 'bg-[#F0F7ED] text-[#2D5A27] border-[#B7C8B3]' });
+    if (state.timeLimit) badges.push({ label: `${state.timeLimit}秒`, className: 'bg-blue-50 text-[#1A73E8] border-blue-200' });
+    $('#quiz-badges').innerHTML = badges.map(badge => (
+        `<span class="rounded-full border px-2.5 py-1 text-xs font-extrabold ${badge.className}">${badge.label}</span>`
+    )).join('');
+}
+
 function choose(option) {
     if (state.locked) return;
     stopTimer();
@@ -412,14 +436,17 @@ function choose(option) {
 
     const item = state.items[state.current];
     const isCorrect = option === item.answer;
+    state.lastScoreDelta = isCorrect ? getQuestionScore() : 0;
     if (isCorrect) {
         state.correct++;
-        state.score += getQuestionScore();
-        if (state.reviewMode) {
-            removeReviewItem(item);
+        state.score += state.lastScoreDelta;
+        if (state.reviewMode && removeReviewItem(item)) {
+            state.reviewCleared++;
         }
     } else {
-        addReviewItem(item);
+        if (addReviewItem(item)) {
+            state.reviewAdded++;
+        }
     }
     $('#score').textContent = `Score ${state.score}`;
     updateReviewControls();
@@ -439,7 +466,7 @@ function renderFeedback(item, isCorrect, option) {
     feedback.style.display = 'block';
     $('#result-label').textContent = isCorrect ? '正解' : '不正解';
     $('#result-label').className = isCorrect ? 'text-2xl font-bold text-[#059669]' : 'text-2xl font-bold text-[#DC2626]';
-    const scoreText = isCorrect && state.timeLimit ? ` / +${getQuestionScore()}点` : '';
+    const scoreText = isCorrect && state.timeLimit ? ` / +${state.lastScoreDelta}点` : '';
     $('#answer-line').textContent = isCorrect ? `${item.answer} / ${item.note}${scoreText}` : `正解: ${item.answer} / 回答: ${option}`;
     const detail = $('#detail-list');
     detail.innerHTML = '';
@@ -505,6 +532,8 @@ function renderResult() {
     $('#final-score').textContent = state.score;
     $('#final-accuracy').textContent = `${accuracy}%`;
     $('#final-count').textContent = `${state.correct} / ${state.items.length}`;
+    $('#final-review-added').textContent = state.reviewAdded;
+    $('#final-review-cleared').textContent = state.reviewCleared;
     updateReviewControls();
 }
 

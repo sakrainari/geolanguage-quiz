@@ -120,6 +120,7 @@
                     <div>
                         <div id="quiz-context" class="text-sm font-bold text-[#5E7460]"></div>
                         <div id="qno" class="text-lg font-extrabold text-[#102019]"></div>
+                        <div id="quiz-badges" class="mt-2 flex flex-wrap gap-2"></div>
                     </div>
                     <div id="score" class="rounded-full bg-[#F0F7ED] px-4 py-2 text-sm font-extrabold text-[#2D5A27]"></div>
                 </div>
@@ -154,7 +155,7 @@
             <section id="result" class="app-card rounded-2xl p-7 text-center shadow-xl ring-1 ring-[#DDE8DA]" style="display:none;">
                 <div class="text-sm font-bold uppercase tracking-widest text-[#5E7460]">Result</div>
                 <div id="final-score" class="mt-2 text-6xl font-extrabold text-[#102019]">0</div>
-                <div class="mt-6 grid gap-3 md:grid-cols-2">
+                <div class="mt-6 grid gap-3 md:grid-cols-4">
                     <div class="rounded-xl bg-[#F0F7ED] p-5">
                         <div class="text-xs font-bold uppercase tracking-widest text-[#5E7460]">Accuracy</div>
                         <div id="final-accuracy" class="mt-1 text-3xl font-extrabold text-[#102019]">0%</div>
@@ -162,6 +163,14 @@
                     <div class="rounded-xl bg-[#F0F7ED] p-5">
                         <div class="text-xs font-bold uppercase tracking-widest text-[#5E7460]">Correct</div>
                         <div id="final-count" class="mt-1 text-3xl font-extrabold text-[#102019]">0 / 0</div>
+                    </div>
+                    <div class="rounded-xl bg-orange-50 p-5">
+                        <div class="text-xs font-bold uppercase tracking-widest text-orange-700">Review Added</div>
+                        <div id="final-review-added" class="mt-1 text-3xl font-extrabold text-orange-900">0</div>
+                    </div>
+                    <div class="rounded-xl bg-emerald-50 p-5">
+                        <div class="text-xs font-bold uppercase tracking-widest text-emerald-700">Review Cleared</div>
+                        <div id="final-review-cleared" class="mt-1 text-3xl font-extrabold text-emerald-900">0</div>
                     </div>
                 </div>
                 <button id="retry" class="primary-action mt-6 rounded-lg px-6 py-3 font-extrabold transition active:scale-[0.98]">もう一度</button>
