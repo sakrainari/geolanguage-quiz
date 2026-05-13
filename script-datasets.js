@@ -1,0 +1,151 @@
+const SCRIPT_DATASETS = {
+    thai: {
+        id: 'thai',
+        label: 'タイ文字',
+        nativeLabel: 'ไทย',
+        description: 'GeoGuessr向けに、文字・母音・県名・略語を段階的に練習します。',
+        textClass: 'thai-text',
+        accent: 'teal',
+        modes: [
+            {
+                id: 'thai-consonants',
+                label: '子音',
+                description: 'タイ子音の基本音を読む',
+                buildItems: () => consonants.map(c => ({
+                    prompt: c.thai,
+                    answer: c.roman,
+                    type: c.class,
+                    note: `${c.name} / ${c.ipa}`,
+                    detail: [
+                        { label: '文字名', value: c.name },
+                        { label: '子音クラス', value: c.class },
+                        { label: 'IPA', value: c.ipa },
+                    ],
+                })),
+            },
+            {
+                id: 'thai-vowels',
+                label: '子音＋母音',
+                description: '子音と基本母音の組み合わせを読む',
+                buildItems: () => consonants.flatMap(c => THAI_VOWEL_PATTERNS.map(v => ({
+                    prompt: v.pattern.replace('{c}', c.thai),
+                    answer: `${c.roman}${v.roman}`,
+                    type: '子音＋母音',
+                    note: `${c.thai} (${c.roman}) + ${v.name} (${v.roman})`,
+                    detail: [
+                        { label: '子音', value: `${c.thai} / ${c.name} / ${c.roman}` },
+                        { label: '母音', value: `${v.name} / ${v.roman}` },
+                        { label: '書き方', value: v.position },
+                    ],
+                }))),
+            },
+            {
+                id: 'thai-provinces',
+                label: '県名',
+                description: 'タイ県名を英語名で答える',
+                buildItems: () => provinceQuizData.map(p => ({
+                    prompt: p.thai,
+                    answer: p.english,
+                    type: p.region,
+                    note: `${p.katakana} / ${p.meaning}`,
+                    detail: [
+                        { label: '地域', value: p.region },
+                        { label: '意味', value: p.meaning },
+                        { label: '語源', value: p.lexeme },
+                    ],
+                })),
+            },
+            {
+                id: 'thai-abbr',
+                label: '県名略語',
+                description: 'タイの県名略語から県名を当てる',
+                buildItems: () => provinceQuizData.map(p => ({
+                    prompt: p.abbr,
+                    answer: p.english,
+                    type: '県名略語',
+                    note: `${p.thai} / ${p.katakana}`,
+                    detail: [
+                        { label: '正式表記', value: p.thai },
+                        { label: '略語', value: p.abbr },
+                        { label: '地域', value: p.region },
+                    ],
+                })),
+            },
+        ],
+    },
+    bengali: {
+        id: 'bengali',
+        label: 'ベンガル文字',
+        nativeLabel: 'বাংলা',
+        description: 'バングラデシュの看板・地名判読向けに、子音・母音記号・地名を練習します。',
+        textClass: 'bengali-text',
+        accent: 'indigo',
+        modes: [
+            {
+                id: 'bengali-consonants',
+                label: '子音',
+                description: 'ベンガル文字の子音骨格を読む',
+                buildItems: () => CONSONANT_DATA.map(c => ({
+                    prompt: c.q,
+                    answer: c.a,
+                    type: c.type,
+                    note: c.desc,
+                    detail: [
+                        { label: 'ローマ字', value: c.roman },
+                        { label: '分類', value: c.type },
+                        { label: 'メモ', value: c.desc },
+                    ],
+                })),
+            },
+            {
+                id: 'bengali-vowels',
+                label: '子音＋母音記号',
+                description: '子音に母音記号を足した形を読む',
+                buildItems: () => CONSONANT_DATA.flatMap(c => VOWEL_SIGN_DATA.filter(v => v.sign !== '').map(v => ({
+                    prompt: `${c.q}${v.sign}`,
+                    answer: `${c.roman}${v.vowel}`,
+                    type: '子音＋母音',
+                    note: `${c.q} (${c.roman}) + ${v.display} (${v.vowel})`,
+                    detail: [
+                        { label: '子音', value: `${c.q} / ${c.roman} / ${c.type}` },
+                        { label: '母音記号', value: `${v.display} / ${v.vowel}` },
+                        { label: 'メモ', value: v.desc },
+                    ],
+                }))),
+            },
+            {
+                id: 'bengali-places',
+                label: '実戦地名',
+                description: 'バングラデシュの管区・地区名を読む',
+                buildItems: () => PLACE_DATA.map(p => ({
+                    prompt: p.q,
+                    answer: p.a,
+                    type: p.type,
+                    note: p.desc,
+                    detail: [
+                        { label: '種別', value: p.type },
+                        { label: '地名', value: p.a },
+                        { label: 'メモ', value: p.desc },
+                    ],
+                })),
+            },
+        ],
+    },
+};
+
+const THAI_VOWEL_PATTERNS = [
+    { pattern: '{c}ะ', roman: 'a', name: '短い a', position: '子音の後ろに ะ' },
+    { pattern: '{c}า', roman: 'aa', name: '長い aa', position: '子音の後ろに า' },
+    { pattern: '{c}ิ', roman: 'i', name: '短い i', position: '子音の上に ิ' },
+    { pattern: '{c}ี', roman: 'ii', name: '長い ii', position: '子音の上に ี' },
+    { pattern: '{c}ึ', roman: 'ue', name: '短い ue', position: '子音の上に ึ' },
+    { pattern: '{c}ื', roman: 'uee', name: '長い uee', position: '子音の上に ื' },
+    { pattern: '{c}ุ', roman: 'u', name: '短い u', position: '子音の下に ุ' },
+    { pattern: '{c}ู', roman: 'uu', name: '長い uu', position: '子音の下に ู' },
+    { pattern: 'เ{c}', roman: 'ee', name: '長い ee', position: '子音の前に เ' },
+    { pattern: 'แ{c}', roman: 'ae', name: '長い ae', position: '子音の前に แ' },
+    { pattern: 'โ{c}', roman: 'oo', name: '長い oo', position: '子音の前に โ' },
+    { pattern: 'ไ{c}', roman: 'ai', name: 'ai', position: '子音の前に ไ' },
+    { pattern: 'ใ{c}', roman: 'ai', name: 'ai', position: '子音の前に ใ' },
+    { pattern: '{c}ำ', roman: 'am', name: 'am', position: '子音の後ろに ำ' },
+];
