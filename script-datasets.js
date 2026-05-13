@@ -27,6 +27,19 @@ const SCRIPT_DATASETS = {
                 id: 'thai-vowels',
                 label: '子音＋母音',
                 description: '子音と基本母音の組み合わせを読む',
+                guide: {
+                    title: 'タイ文字の子音＋母音',
+                    points: [
+                        '母音記号は子音の後ろだけでなく、前・上・下にも付く。',
+                        'เ / แ / โ / ไ / ใ は子音の前に書くが、読むときは子音の後に母音が来る。',
+                        'このモードでは声調や末子音は扱わず、子音の基本ローマ字＋母音だけに集中する。',
+                    ],
+                    examples: [
+                        { text: 'กา', reading: 'kaa', note: 'ก k + า aa' },
+                        { text: 'กิ', reading: 'ki', note: 'ก k + ิ i' },
+                        { text: 'เก', reading: 'kee', note: 'เ は前に書くが k + ee と読む' },
+                    ],
+                },
                 buildItems: () => consonants.flatMap(c => THAI_VOWEL_PATTERNS.map(v => ({
                     prompt: v.pattern.replace('{c}', c.thai),
                     answer: `${c.roman}${v.roman}`,
@@ -103,6 +116,19 @@ const SCRIPT_DATASETS = {
                 id: 'bengali-vowels',
                 label: '子音＋母音記号',
                 description: '子音に母音記号を足した形を読む',
+                guide: {
+                    title: 'ベンガル文字の子音＋母音記号',
+                    points: [
+                        '子音字には基本的に短い a が含まれる。母音記号が付くと、その母音に置き換わる。',
+                        'ি は子音の左側に出るが、読む順番は子音＋i。',
+                        'ে / ো なども見た目の位置と読む順番がずれるので、形をセットで覚える。',
+                    ],
+                    examples: [
+                        { text: 'ক', reading: 'ka', note: 'ক k に内在母音 a' },
+                        { text: 'কি', reading: 'ki', note: 'ি は左に出るが k + i' },
+                        { text: 'কে', reading: 'ke', note: 'ে も左側に出る母音記号' },
+                    ],
+                },
                 buildItems: () => CONSONANT_DATA.flatMap(c => VOWEL_SIGN_DATA.filter(v => v.sign !== '').map(v => ({
                     prompt: `${c.q}${v.sign}`,
                     answer: `${c.roman}${v.vowel}`,

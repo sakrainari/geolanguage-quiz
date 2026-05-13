@@ -78,9 +78,38 @@ function renderModeCards() {
         label.querySelector('input').onchange = () => {
             state.modeId = mode.id;
             renderModeCards();
+            renderModeGuide();
         };
         modes.appendChild(label);
     });
+}
+
+function renderModeGuide() {
+    const dataset = getDataset();
+    const guide = getMode().guide;
+    const guideBox = $('#mode-guide');
+    if (!guide) {
+        guideBox.style.display = 'none';
+        guideBox.innerHTML = '';
+        return;
+    }
+
+    guideBox.style.display = 'block';
+    guideBox.innerHTML = `
+        <div class="text-sm font-extrabold text-slate-900">${guide.title}</div>
+        <ul class="mt-2 grid list-disc gap-1 pl-5 text-sm font-semibold leading-6 text-slate-600">
+            ${guide.points.map(point => `<li>${point}</li>`).join('')}
+        </ul>
+        <div class="mt-3 grid gap-2 md:grid-cols-3">
+            ${guide.examples.map(example => `
+                <div class="rounded-lg bg-white p-3 ring-1 ring-slate-200">
+                    <div class="${dataset.textClass} text-2xl font-extrabold text-slate-950">${example.text}</div>
+                    <div class="mt-1 text-sm font-bold text-slate-700">${example.reading}</div>
+                    <div class="mt-1 text-xs font-semibold text-slate-400">${example.note}</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 function renderSetup() {
@@ -91,6 +120,7 @@ function renderSetup() {
     $('#dataset-description').textContent = dataset.description;
     renderDatasetTabs();
     renderModeCards();
+    renderModeGuide();
 }
 
 function startQuiz() {
