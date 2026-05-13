@@ -8,6 +8,9 @@ const state = {
     locked: false,
     hardMode: false,
     reviewMode: false,
+    timeLimit: 0,
+    timeRemaining: 0,
+    timerId: null,
 };
 
 const REVIEW_STORAGE_KEY = 'geolanguage-quiz-review-v1';
@@ -35,6 +38,10 @@ function getMode() {
 function getCount() {
     const count = $('#count').value;
     return count === 'all' ? Infinity : Number(count);
+}
+
+function getTimeLimit() {
+    return Number($('#time-limit').value);
 }
 
 function getItemKey(datasetId, modeId, item) {
@@ -200,12 +207,14 @@ function renderSetup() {
 }
 
 function startQuiz(useReview = false) {
+    stopTimer();
     const optionPool = getMode().buildItems();
     const questionItems = useReview ? getReviewItemsForCurrentMode() : optionPool;
     if (!questionItems.length) return;
     const count = Math.min(getCount(), questionItems.length);
     state.hardMode = $('#hard-mode').checked;
     state.reviewMode = useReview;
+    state.timeLimit = getTimeLimit();
     state.items = shuffle(questionItems).slice(0, count).map(item => ({
         ...item,
         options: buildOptions(item, optionPool),
@@ -216,6 +225,62 @@ function startQuiz(useReview = false) {
     state.locked = false;
     showScreen('quiz');
     renderQuestion();
+}
+
+function stopTimer() {
+    if (state.timerId) {
+        clearInterval(state.timerId);
+        state.timerId = null;
+    }
+}
+
+function startTimer() {
+    stopTimer();
+    if (!state.timeLimit) {
+        $('#timer-wrap').style.display = 'none';
+        return;
+    }
+
+    state.timeRemaining = state.timeLimit;
+    $('#timer-wrap').style.display = 'block';
+    updateTimerDisplay();
+    state.timerId = setInterval(() => {
+        state.timeRemaining = Math.max(0, state.timeRemaining - 0.1);
+        updateTimerDisplay();
+        if (state.timeRemaining <= 0) {
+            handleTimeout();
+        }
+    }, 100);
+}
+
+function updateTimerDisplay() {
+    if (!state.timeLimit) return;
+    const ratio = Math.max(0, state.timeRemaining / state.timeLimit);
+    $('#timer-label').textContent = `${state.timeRemaining.toFixed(1)}s`;
+    $('#timer-bar').style.width = `${ratio * 100}%`;
+    $('#timer-bar').style.backgroundColor = ratio <= 0.25 ? '#DC2626' : ratio <= 0.5 ? '#F97316' : '#2D5A27';
+}
+
+function handleTimeout() {
+    if (state.locked) return;
+    stopTimer();
+    state.locked = true;
+
+    const item = state.items[state.current];
+    addReviewItem(item);
+    updateReviewControls();
+    $$('.opt').forEach(button => {
+        const text = button.textContent.replace(/^\d+\s*/, '');
+        button.disabled = true;
+        if (text === item.answer) button.classList.add('correct');
+    });
+    renderFeedback(item, false, '時間切れ');
+}
+
+function getQuestionScore() {
+    if (!state.timeLimit) return 100;
+    const bonus = Math.ceil(Math.max(0, state.timeRemaining / state.timeLimit) * 100);
+    return 100 + bonus;
 }
 
 function buildOptions(item, pool) {
@@ -326,6 +391,7 @@ function renderQuestion() {
     $('#prompt').textContent = item.prompt;
     $('#prompt').className = `${dataset.textClass} text-center font-bold text-[#102019] drop-shadow-sm ${mode.id.includes('places') || mode.id.includes('provinces') ? 'text-5xl md:text-7xl' : 'text-7xl md:text-9xl'}`;
     $('#feedback').style.display = 'none';
+    startTimer();
 
     const options = $('#options');
     options.innerHTML = '';
@@ -341,13 +407,14 @@ function renderQuestion() {
 
 function choose(option) {
     if (state.locked) return;
+    stopTimer();
     state.locked = true;
 
     const item = state.items[state.current];
     const isCorrect = option === item.answer;
     if (isCorrect) {
         state.correct++;
-        state.score += 100;
+        state.score += getQuestionScore();
         if (state.reviewMode) {
             removeReviewItem(item);
         }
@@ -372,7 +439,8 @@ function renderFeedback(item, isCorrect, option) {
     feedback.style.display = 'block';
     $('#result-label').textContent = isCorrect ? '正解' : '不正解';
     $('#result-label').className = isCorrect ? 'text-2xl font-bold text-[#059669]' : 'text-2xl font-bold text-[#DC2626]';
-    $('#answer-line').textContent = isCorrect ? `${item.answer} / ${item.note}` : `正解: ${item.answer} / 回答: ${option}`;
+    const scoreText = isCorrect && state.timeLimit ? ` / +${getQuestionScore()}点` : '';
+    $('#answer-line').textContent = isCorrect ? `${item.answer} / ${item.note}${scoreText}` : `正解: ${item.answer} / 回答: ${option}`;
     const detail = $('#detail-list');
     detail.innerHTML = '';
     const detailRows = [...item.detail];
@@ -431,6 +499,7 @@ function nextQuestion() {
 }
 
 function renderResult() {
+    stopTimer();
     showScreen('result');
     const accuracy = state.items.length ? Math.round((state.correct / state.items.length) * 100) : 0;
     $('#final-score').textContent = state.score;
@@ -440,6 +509,7 @@ function renderResult() {
 }
 
 function showScreen(name) {
+    if (name !== 'quiz') stopTimer();
     ['setup', 'quiz', 'result'].forEach(id => {
         $('#' + id).style.display = id === name ? 'block' : 'none';
     });

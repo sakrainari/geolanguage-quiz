@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans:wght@400;700&family=Noto+Sans+Bengali:wght@400;700&family=Noto+Sans+Thai+Looped:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700;800&family=Noto+Sans+Thai+Looped:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --forest: #2D5A27;
@@ -17,10 +17,10 @@
             --surface: #F8F9FA;
             --ink: #102019;
         }
-        body { font-family: 'M PLUS Rounded 1c', sans-serif; background: var(--surface); color: var(--ink); }
+        body { font-family: 'Noto Sans JP', 'M PLUS Rounded 1c', sans-serif; background: var(--surface); color: var(--ink); }
         .thai-text { font-family: 'Noto Sans Thai Looped', sans-serif; }
-        .bengali-text { font-family: 'Noto Sans Bengali', sans-serif; }
-        .cyrillic-text { font-family: 'Noto Sans', 'M PLUS Rounded 1c', sans-serif; }
+        .bengali-text { font-family: 'Noto Sans Bengali', sans-serif; line-height: 1.15; }
+        .cyrillic-text { font-family: 'Noto Sans', 'Noto Sans JP', sans-serif; }
         .app-card { border-radius: 1rem; background: white; box-shadow: 0 18px 45px -28px rgb(45 90 39 / 0.45); }
         .mode-card:has(input:checked), label:has(input:checked) .mode-card { border-color: var(--forest); background: #F0F7ED; }
         .prompt-panel {
@@ -83,7 +83,7 @@
                     </div>
                 </div>
 
-                <div class="mt-7 grid gap-4 md:grid-cols-3">
+                <div class="mt-7 grid gap-4 md:grid-cols-4">
                     <div>
                         <label for="count" class="mb-2 block text-sm font-bold text-[#5E7460]">出題数</label>
                         <select id="count" class="w-full rounded-lg border border-[#B7C8B3] bg-white p-3 font-bold">
@@ -91,6 +91,15 @@
                             <option value="20">20問</option>
                             <option value="50">50問</option>
                             <option value="all">全問</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="time-limit" class="mb-2 block text-sm font-bold text-[#5E7460]">制限時間</label>
+                        <select id="time-limit" class="w-full rounded-lg border border-[#B7C8B3] bg-white p-3 font-bold">
+                            <option value="0">無制限</option>
+                            <option value="15">15秒</option>
+                            <option value="10">10秒</option>
+                            <option value="5">5秒</option>
                         </select>
                     </div>
                     <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-[#B7C8B3] bg-white p-3 transition hover:border-[#2D5A27]">
@@ -113,6 +122,15 @@
                         <div id="qno" class="text-lg font-extrabold text-[#102019]"></div>
                     </div>
                     <div id="score" class="rounded-full bg-[#F0F7ED] px-4 py-2 text-sm font-extrabold text-[#2D5A27]"></div>
+                </div>
+                <div id="timer-wrap" class="mb-4" style="display:none;">
+                    <div class="mb-1 flex items-center justify-between text-xs font-extrabold text-[#5E7460]">
+                        <span>Time</span>
+                        <span id="timer-label">0.0s</span>
+                    </div>
+                    <div class="h-2 overflow-hidden rounded-full bg-[#F0F7ED]">
+                        <div id="timer-bar" class="h-full rounded-full bg-[#2D5A27] transition-[width] duration-100 ease-linear"></div>
+                    </div>
                 </div>
 
                 <div class="prompt-panel flex min-h-[210px] items-center justify-center rounded-2xl p-6 ring-1 ring-[#DDE8DA]">
